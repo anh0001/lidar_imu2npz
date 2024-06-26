@@ -71,6 +71,23 @@ process_npz() {
     fi
 }
 
+# Function to visualize the npz point cloud
+visualize_pointcloud() {
+    local npz_file="$1"
+    if [ ! -f "$npz_file" ]; then
+        log_message "Error: Specified file $npz_file does not exist."
+        exit 1
+    fi
+
+    log_message "Visualizing: $npz_file"
+
+    if ! python3 scripts/npz_pointcloud_viewer_open3d.py "$npz_file"; then
+        log_message "Error visualizing $npz_file. Please check the file and try again."
+    else
+        log_message "Successfully visualized $npz_file."
+    fi
+}
+
 # Main run_command function
 run_fastlio() {
     local rosbag_raw_dir="$(realpath "$SCRIPT_DIR/rosbag/raw")"
@@ -203,10 +220,17 @@ elif [ "$1" == "enter" ]; then
     enter_container
 elif [ "$1" == "build" ]; then
     build_package
-elif [ "$1" == "run-fastlio" ]; then
+elif [ "$1" == "run-fastlio-mapping" ]; then
     run_fastlio
 elif [ "$1" == "run-npz" ]; then
     run_npz
+elif [ "$1" == "visualize" ]; then
+    if [ -z "$2" ]; then
+        echo "Error: Please specify the npz file to visualize."
+        echo "Usage: $0 visualize <file.npz>"
+        exit 1
+    fi
+    visualize_pointcloud "$2"
 else
-    echo "Usage: $0 [build-container|start|enter|build|run]"
+    echo "Usage: $0 [build-container|start|enter|build|run-fastlio-mapping|run-npz|visualize]"
 fi
