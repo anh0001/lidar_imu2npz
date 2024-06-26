@@ -56,6 +56,7 @@ This project aims to build 3D point clouds from the 3D LiDAR Livox Mid-360 attac
 
    ```sh
    ./cmds.sh enter
+   source devel/setup.bash
    ```
 
 2. **Source the Commands Script**

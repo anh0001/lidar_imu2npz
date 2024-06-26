@@ -251,6 +251,13 @@ enter_container() {
     fi
 }
 
+# Function to clear logs in the logs folder
+clear_logs() {
+    log_message "Clearing all logs in $LOG_DIR"
+    rm -rf "$LOG_DIR"/*
+    log_message "Logs cleared."
+}
+
 # Main entry point
 case "$1" in
     build-container) build_container ;;
@@ -269,8 +276,9 @@ case "$1" in
         visualize_pointcloud "$2"
         ;;
     visualize-all) visualize_all ;;
+    clear-logs) clear_logs ;;
     *)
-        echo "Usage: $0 [build-container|start|enter|build|run-fastlio-mapping|map-to-npz|combine-maps-to-npz|visualize-pc|visualize-all]"
+        echo "Usage: $0 [build-container|start|enter|build|run-fastlio-mapping|map-to-npz|combine-maps-to-npz|visualize-pc|visualize-all|clear-logs]"
         ;;
 esac
 
@@ -278,7 +286,7 @@ esac
 if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
     _commands_completions() {
         local cur="${COMP_WORDS[COMP_CWORD]}"
-        local commands="build-container start enter build run-fastlio-mapping map-to-npz combine-maps-to-npz visualize-pc visualize-all"
+        local commands="build-container start enter build run-fastlio-mapping map-to-npz combine-maps-to-npz visualize-pc visualize-all clear-logs"
         COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
     }
     complete -F _commands_completions cmds.sh
