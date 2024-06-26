@@ -21,7 +21,7 @@ This project aims to build 3D point clouds from the 3D LiDAR Livox Mid-360 attac
 
    ```sh
    git clone https://github.com/anh0001/lidar_imu2npz.git
-   cd your-repo-name
+   cd lidar_imu2npz
    ```
 
 2. **Initialize Submodules**
