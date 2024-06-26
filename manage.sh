@@ -189,7 +189,7 @@ start_container() {
 
 enter_container() {
     if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
-        docker exec -it $CONTAINER_NAME bash
+        docker exec -it $CONTAINER_NAME bash -c "source /opt/ros/noetic/setup.bash && exec bash"
     else
         echo "No running container with name $CONTAINER_NAME found."
     fi
