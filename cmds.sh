@@ -88,6 +88,45 @@ visualize_pointcloud() {
     fi
 }
 
+# Function to visualize all npz point clouds
+visualize_all() {
+    local npz_dir="$SCRIPT_DIR/out"
+    log_message "Visualizing all npz files in $npz_dir"
+
+    for npz_file in "$npz_dir"/*.npz; do
+        if [ -f "$npz_file" ]; then
+            visualize_pointcloud "$npz_file"
+        else
+            log_message "No npz files found in $npz_dir."
+        fi
+    done
+}
+
+# Function to combine maps into an npz file
+combine_maps_to_npz() {
+    local rosbag_processed_dir="$(realpath "$SCRIPT_DIR/rosbag/processed")"
+    local output_dir="$SCRIPT_DIR/out"
+    check_and_create_directory "$output_dir"
+
+    log_message "Combining maps into npz files from $rosbag_processed_dir"
+
+    for processed_bag in "$rosbag_processed_dir"/*.bag; do
+        if [ -f "$processed_bag" ]; then
+            local base_filename=$(basename "$processed_bag" .bag)
+            local combined_npz="$output_dir/combined.npz"
+            log_message "Combining: $processed_bag to $combined_npz"
+
+            if ! python3 scripts/pointcloud2_to_npz.py "$processed_bag" -t /cloud_registered -o "$combined_npz" -s &> "$LOG_DIR/combine_npz_$base_filename.log"; then
+                log_message "Error combining $processed_bag into npz. Check the log file for details: $LOG_DIR/combine_npz_$base_filename.log"
+            else
+                log_message "Successfully combined $processed_bag into npz format. Output written to $combined_npz"
+            fi
+        else
+            log_message "No processed .bag files found in $rosbag_processed_dir."
+        fi
+    done
+}
+
 # Main run_command function
 run_fastlio() {
     local rosbag_raw_dir="$(realpath "$SCRIPT_DIR/rosbag/raw")"
@@ -101,7 +140,7 @@ run_fastlio() {
     check_permissions "$rosbag_processed_dir" -w
 
     for src_bag in "$rosbag_raw_dir"/*.bag; do
-        if [ -f "$src_bag" ]; then
+        if [ -f "$src_bag" ];then
             process_rosbag "$src_bag"
         else
             log_message "No .bag files found in $rosbag_raw_dir."
@@ -109,7 +148,7 @@ run_fastlio() {
     done
 }
 
-run_npz() {
+run_convert_npz() {
     local rosbag_processed_dir="$(realpath "$SCRIPT_DIR/rosbag/processed")"
 
     log_message "Processed rosbag directory: $rosbag_processed_dir"
@@ -117,7 +156,7 @@ run_npz() {
     check_permissions "$rosbag_processed_dir" -r
 
     for processed_bag in "$rosbag_processed_dir"/*.bag; do
-        if [ -f "$processed_bag" ]; then
+        if [ -f "$processed_bag" ];then
             process_npz "$processed_bag"
         else
             log_message "No processed .bag files found in $rosbag_processed_dir."
@@ -212,25 +251,35 @@ enter_container() {
     fi
 }
 
-if [ "$1" == "build-container" ]; then
-    build_container
-elif [ "$1" == "start" ]; then
-    start_container
-elif [ "$1" == "enter" ]; then
-    enter_container
-elif [ "$1" == "build" ]; then
-    build_package
-elif [ "$1" == "run-fastlio-mapping" ]; then
-    run_fastlio
-elif [ "$1" == "run-npz" ]; then
-    run_npz
-elif [ "$1" == "visualize" ]; then
-    if [ -z "$2" ]; then
-        echo "Error: Please specify the npz file to visualize."
-        echo "Usage: $0 visualize <file.npz>"
-        exit 1
-    fi
-    visualize_pointcloud "$2"
-else
-    echo "Usage: $0 [build-container|start|enter|build|run-fastlio-mapping|run-npz|visualize]"
+# Main entry point
+case "$1" in
+    build-container) build_container ;;
+    start) start_container ;;
+    enter) enter_container ;;
+    build) build_package ;;
+    run-fastlio-mapping) run_fastlio ;;
+    map-to-npz) run_convert_npz ;;
+    combine-maps-to-npz) combine_maps_to_npz ;;
+    visualize-pc)
+        if [ -z "$2" ]; then
+            echo "Error: Please specify the npz file to visualize."
+            echo "Usage: $0 visualize-pc <file.npz>"
+            exit 1
+        fi
+        visualize_pointcloud "$2"
+        ;;
+    visualize-all) visualize_all ;;
+    *)
+        echo "Usage: $0 [build-container|start|enter|build|run-fastlio-mapping|map-to-npz|combine-maps-to-npz|visualize-pc|visualize-all]"
+        ;;
+esac
+
+# Enable tab completion
+if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
+    _commands_completions() {
+        local cur="${COMP_WORDS[COMP_CWORD]}"
+        local commands="build-container start enter build run-fastlio-mapping map-to-npz combine-maps-to-npz visualize-pc visualize-all"
+        COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+    }
+    complete -F _commands_completions cmds.sh
 fi
