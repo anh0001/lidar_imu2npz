@@ -9,6 +9,7 @@ This project aims to build 3D point clouds from the 3D LiDAR Livox Mid-360 attac
 - Visualize the 3D point clouds.
 - Utilize Docker for easy setup and deployment.
 - Supports ROS Noetic, RViz, and Gazebo with GPU acceleration.
+- Multiple rosbags of Livox sensor recording and output a single or multiple NPZ files.
 
 ## Prerequisites
 - Docker
@@ -19,7 +20,7 @@ This project aims to build 3D point clouds from the 3D LiDAR Livox Mid-360 attac
 1. **Clone the Repository**
 
    ```sh
-   git clone https://github.com/yourusername/your-repo-name.git
+   git clone https://github.com/anh0001/lidar_imu2npz.git
    cd your-repo-name
    ```
 
@@ -126,7 +127,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Livox](https://www.livoxtech.com/mid-360) for the Mid-360 LiDAR.
 - [ROS](https://www.ros.org/) for providing the robotics framework.
 - [Docker](https://www.docker.com/) for containerization technology.
-
-## Contact
-
-For any inquiries, please contact [your-email@example.com](mailto:your-email@example.com).
