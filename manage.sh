@@ -53,8 +53,26 @@ process_rosbag() {
     fi
 }
 
+# Function to convert processed rosbag files to npz
+process_npz() {
+    local src_bag="$1"
+    local base_filename=$(basename "$src_bag" .bag)
+    local output_dir="$SCRIPT_DIR/out"
+    local log_file="$LOG_DIR/npz_$(basename "$src_bag" .bag).log"
+
+    check_and_create_directory "$output_dir"
+    
+    log_message "Converting: $src_bag to npz format"
+    
+    if ! python3 scripts/pointcloud2_to_npz.py "$src_bag" -t /cloud_registered -o "$output_dir" &> "$log_file"; then
+        log_message "Error converting $src_bag to npz. Check the log file for details: $log_file"
+    else
+        log_message "Successfully converted $src_bag to npz format. Output written to $output_dir"
+    fi
+}
+
 # Main run_command function
-run_command() {
+run_fastlio() {
     local rosbag_raw_dir="$(realpath "$SCRIPT_DIR/rosbag/raw")"
     local rosbag_processed_dir="$(realpath "$SCRIPT_DIR/rosbag/processed")"
 
@@ -70,6 +88,22 @@ run_command() {
             process_rosbag "$src_bag"
         else
             log_message "No .bag files found in $rosbag_raw_dir."
+        fi
+    done
+}
+
+run_npz() {
+    local rosbag_processed_dir="$(realpath "$SCRIPT_DIR/rosbag/processed")"
+
+    log_message "Processed rosbag directory: $rosbag_processed_dir"
+
+    check_permissions "$rosbag_processed_dir" -r
+
+    for processed_bag in "$rosbag_processed_dir"/*.bag; do
+        if [ -f "$processed_bag" ]; then
+            process_npz "$processed_bag"
+        else
+            log_message "No processed .bag files found in $rosbag_processed_dir."
         fi
     done
 }
@@ -169,8 +203,10 @@ elif [ "$1" == "enter" ]; then
     enter_container
 elif [ "$1" == "build" ]; then
     build_package
-elif [ "$1" == "run" ]; then
-    run_command
+elif [ "$1" == "run-fastlio" ]; then
+    run_fastlio
+elif [ "$1" == "run-npz" ]; then
+    run_npz
 else
     echo "Usage: $0 [build-container|start|enter|build|run]"
 fi
