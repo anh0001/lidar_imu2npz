@@ -48,6 +48,11 @@ This project aims to build 3D point clouds from the 3D LiDAR Livox Mid-360 attac
    ./cmds.sh start
    ```
 
+5. Perform build packages using the command:
+   ```bash
+   ./cmds.sh build
+   ```
+
 ## Usage
 
 1. **Enter the Docker Container**
