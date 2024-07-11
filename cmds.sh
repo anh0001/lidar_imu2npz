@@ -46,7 +46,7 @@ process_rosbag() {
 
     log_message "Processing: $src_bag -> $dst_bag"
     
-    if ! roslaunch fast_lio bag_mapping_mid360.launch src_bag:="$src_bag" dst_bag:="$dst_bag" &> "$log_file"; then
+    if ! roslaunch launch/bag_mapping_mid360.launch src_bag:="$src_bag" dst_bag:="$dst_bag" &> "$log_file"; then
         log_message "Error processing $src_bag. Check the log file for details: $log_file"
     else
         log_message "Successfully processed $src_bag. Output written to $dst_bag"
